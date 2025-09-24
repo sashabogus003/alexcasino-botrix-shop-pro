@@ -18,9 +18,9 @@ function formatNumber(n) {
 function SkeletonCard() {
   return (
     <div className="rounded-2xl border border-gray-800 bg-gray-900 p-4 shadow-sm">
-      <div className="h-6 w-2/3 bg-gray-200 rounded mb-2 animate-pulse"></div>
-      <div className="h-4 w-1/2 bg-gray-200 rounded mb-4 animate-pulse"></div>
-      <div className="h-8 w-32 bg-gray-200 rounded animate-pulse"></div>
+      <div className="h-6 w-2/3 bg-gray-700 rounded mb-2 animate-pulse"></div>
+      <div className="h-4 w-1/2 bg-gray-700 rounded mb-4 animate-pulse"></div>
+      <div className="h-8 w-32 bg-gray-700 rounded animate-pulse"></div>
     </div>
   );
 }
@@ -93,20 +93,6 @@ export default function Shop() {
   };
 
   useEffect(() => { fetchItems(); }, []);
-
-  const copyCommand = async (name) => { setSelectedItem(name); const cmd = `!shop buy "${name}"`; try { await navigator.clipboard.writeText(cmd); setCopied(true); setTimeout(()=>setCopied(false),1500); pushToast("Команда скопирована", `Вставьте в чат Kick: ${cmd}`); } catch { setCopied(false); } };
-    const cmd = `!shop buy "${name}"`;
-    try {
-      await navigator.clipboard.writeText(cmd);
-      pushToast("Команда скопирована", `Вставьте в чат Kick: ${cmd}`);
-    } catch {
-      // Фоллбек
-      const ok = window.prompt("Скопируйте команду вручную:", cmd);
-      if (ok !== null) {
-        pushToast("Команда отображена", "Скопируйте из диалога и вставьте в чат.");
-      }
-    }
-  };
 
   const onEnter = (e) => { if (e.key === "Enter") fetchUser(); };
 
@@ -184,7 +170,7 @@ export default function Shop() {
                 const price = item.price ?? item.cost ?? item.points ?? 0;
                 const desc = item.description ?? item.desc ?? "";
                 return (
-                  <div key={item.id ?? title} className="group rounded-2xl border bg-gray-900 p-5 shadow-sm hover:shadow-md transition">
+                  <div key={item.id ?? title} className="group rounded-2xl border border-gray-800 bg-gray-900 p-5 shadow-sm hover:shadow-md transition">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="text-lg font-bold">{title}</div>
@@ -234,7 +220,11 @@ export default function Shop() {
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-2 font-semibold text-gray-100 hover:brightness-110"
                 onClick={async () => {
                   const cmd = `!shop buy "${selectedItem}"`;
-                  try { await navigator.clipboard.writeText(cmd); setCopied(true); setTimeout(()=>setCopied(false),1500); } catch {}
+                  try {
+                    await navigator.clipboard.writeText(cmd);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 1500);
+                  } catch {}
                 }}
               >
                 Скопировать
