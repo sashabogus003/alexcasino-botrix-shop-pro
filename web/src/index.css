@@ -2,22 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
-
-html, body, #root {
-  height: 100%;
-}
-
-body {
-  @apply bg-gradient-to-br from-brand-50 via-white to-brand-100 text-gray-900 antialiased;
-  font-family: Inter, ui-sans-serif, system-ui;
-}
-
-
-:root { color-scheme: dark; }
-
+/* Root sizing */
 html, body, #root { height: 100%; }
 
+/* Dark emerald theme */
+:root { color-scheme: dark; }
 body {
-  @apply bg-gradient-to-br from-gray-900 via-gray-950 to-black text-gray-100 antialiased;
+  @apply bg-gradient-to-b from-gray-950 via-gray-900 to-black text-gray-100 antialiased;
   font-family: Inter, ui-sans-serif, system-ui;
+}
+
+/* Reusable utilities */
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 font-semibold transition focus:outline-none focus:ring-2 focus:ring-brand-600;
+}
+.btn-primary {
+  @apply bg-brand-600 text-white hover:brightness-110 shadow-soft;
+}
+.btn-disabled {
+  @apply bg-gray-700 text-gray-400 cursor-not-allowed;
+}
+.card {
+  @apply rounded-2xl border border-gray-800 bg-gray-900/80 shadow-card backdrop-blur;
+}
+.input {
+  @apply w-full rounded-xl border border-gray-700 bg-gray-800/70 px-4 py-2.5 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-600;
+}
+.badge {
+  @apply inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-semibold;
+}
+.badge-green {
+  @apply bg-green-900/30 text-green-300 ring-1 ring-green-700/30;
+}
+.badge-red {
+  @apply bg-red-900/30 text-red-300 ring-1 ring-red-700/30;
 }
