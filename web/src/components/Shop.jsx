@@ -1,3 +1,4 @@
+
 import React, { useEffect, useMemo, useState } from "react";
 import Toast from "./ui/Toast.jsx";
 
@@ -17,7 +18,7 @@ function formatNumber(n) {
 
 function SkeletonCard() {
   return (
-    <div className="card p-4 shadow-soft">
+    <div className="card p-4">
       <div className="h-48 w-full bg-gray-800 rounded mb-3 animate-pulse"></div>
       <div className="h-6 w-2/3 bg-gray-700 rounded mb-2 animate-pulse"></div>
       <div className="h-4 w-1/2 bg-gray-700 rounded mb-4 animate-pulse"></div>
@@ -51,7 +52,7 @@ export default function Shop() {
     if (Array.isArray(user?.data) && user.data[0]?.points != null) return user.data[0].points;
     if (Array.isArray(user) && user[0]?.points != null) return user[0].points;
     const flat = JSON.stringify(user);
-    const match = flat.match(/"points"\s*:\s*(\d+)/);
+    const match = flat.match(/\"points\"\s*:\s*(\d+)/);
     return match ? Number(match[1]) : null;
   }, [user]);
 
@@ -116,7 +117,7 @@ export default function Shop() {
       </div>
 
       <div className="card p-6">
-        {/* Поиск пользователя */}
+        {/* Баланс/поиск */}
         <div className="flex flex-col sm:flex-row sm:items-end gap-3">
           <div className="flex-1">
             <label className="text-sm text-gray-300">Ник на Kick</label>
@@ -139,7 +140,6 @@ export default function Shop() {
           </button>
         </div>
 
-        {/* Баланс */}
         {user && (
           <div className="mt-5 grid sm:grid-cols-3 gap-4">
             <div className="card p-4">
@@ -148,11 +148,11 @@ export default function Shop() {
             </div>
             <div className="card p-4">
               <div className="text-sm text-gray-400">Баланс</div>
-              <div className="text-lg font-bold">{userPoints != null ? formatNumber(userPoints) : "—"} поинтов</div>
+              <div className="text-lg font-bold text-gradient-green">{userPoints != null ? formatNumber(userPoints) : "—"} поинтов</div>
             </div>
             <div className="card p-4">
               <div className="text-sm text-gray-400">Инструкция</div>
-              <div className="text-sm">Покупайте через чат командой <code>!shop buy code телега</code></div>
+              <div className="text-sm">Покупайте через чат командой <code>!shop buy code @telegram</code></div>
             </div>
           </div>
         )}
@@ -160,7 +160,7 @@ export default function Shop() {
         {/* Товары */}
         <div className="mt-8">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xl font-bold">🛍️ Товары</h2>
+            <h2 className="text-xl font-bold glow">🛍️ Товары</h2>
             <button
               onClick={fetchItems}
               className="text-sm text-brand-700 hover:text-brand-800 underline underline-offset-2"
@@ -183,9 +183,11 @@ export default function Shop() {
                 const price = item.price ?? item.cost ?? item.points ?? 0;
                 const desc = item.description ?? item.desc ?? "";
                 const code = item.code ?? title;
+                const out = item.stock === 0;
+                const unlimited = (item.stock === -1 || item.stock === "-1");
 
                 return (
-                  <div key={item.id ?? title} className="card p-5 hover:shadow-neon transition flex flex-col">
+                  <div key={item.id ?? title} className={`card p-5 card-hover ${out ? "opacity-70" : ""} flex flex-col`}>
                     {/* Картинка */}
                     {item.image ? (
                       <img src={item.image} alt={title} className="w-full h-48 object-contain rounded-xl bg-gray-800 mb-3" />
@@ -204,25 +206,25 @@ export default function Shop() {
 
                       {/* Наличие */}
                       <div className="mt-2 text-sm font-bold">
-                        {(item.stock === -1 || item.stock === "-1") ? (
+                        {unlimited ? (
                           <span className="badge badge-green">Без лимита</span>
-                        ) : item.stock > 0 ? (
-                          <span className="badge badge-green">Остаток: {item.stock}</span>
-                        ) : (
+                        ) : out ? (
                           <span className="badge badge-red">Нет в наличии</span>
+                        ) : (
+                          <span className="badge badge-green">Остаток: {item.stock}</span>
                         )}
                       </div>
 
                       {/* Цена */}
                       <div className="mt-4 flex items-center justify-between">
                         <div className="text-sm text-gray-400">Цена</div>
-                        <div className="text-lg font-extrabold text-brand-700">{formatNumber(Number(price))}</div>
+                        <div className="text-lg font-extrabold text-gradient-green">{formatNumber(Number(price))}</div>
                       </div>
 
                       {/* Кнопка купить */}
                       <button
                         onClick={() => {
-                          if (item.stock === 0) {
+                          if (out) {
                             pushToast("❌ Товара нет в наличии", `Товар "${title}" закончился.`);
                             return;
                           }
@@ -230,8 +232,8 @@ export default function Shop() {
                           setStep(1);
                           setTelegram("");
                         }}
-                        disabled={item.stock === 0}
-                        className={`btn mt-4 w-full ${item.stock === 0 ? "btn-disabled" : "btn-primary"}`}
+                        disabled={out}
+                        className={`btn mt-4 w-full ${out ? "btn-disabled" : "btn-primary"}`}
                       >
                         Купить
                       </button>
@@ -282,18 +284,16 @@ export default function Shop() {
               <div className="w-full max-w-lg card p-6">
                 <div className="flex items-start justify-between">
                   <h3 className="text-xl font-bold text-gray-100">Вставьте эту команду в чат Kick</h3>
-                  <button className="text-gray-400 hover:text-gray-200" onClick={() => setSelectedItem(null)} aria-label="Закрыть">
-                    ✕
-                  </button>
+                  <button className="text-gray-400 hover:text-gray-200" onClick={() => setSelectedItem(null)} aria-label="Закрыть">✕</button>
                 </div>
                 <div className="mt-4 rounded-xl bg-gray-800 p-4 font-mono text-green-400">
-                  {getCommand()}
+                  {!selectedItem ? null : `!shop buy ${selectedItem.code}${telegram ? " " + telegram : ""}`}
                 </div>
                 <div className="mt-4 flex gap-3">
                   <button
                     className="btn btn-primary"
                     onClick={async () => {
-                      try { await navigator.clipboard.writeText(getCommand()); setCopied(true); setTimeout(()=>setCopied(false),1500); } catch {}
+                      try { await navigator.clipboard.writeText(`!shop buy ${selectedItem.code}${telegram ? " " + telegram : ""}`); setCopied(true); setTimeout(()=>setCopied(false),1500); } catch {}
                     }}
                   >
                     Скопировать
@@ -304,7 +304,6 @@ export default function Shop() {
               </div>
             </div>
           )}
-
         </div>
       </div>
     </>
