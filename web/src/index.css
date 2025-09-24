@@ -2,9 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  color-scheme: light;
-}
 
 html, body, #root {
   height: 100%;
@@ -12,5 +9,15 @@ html, body, #root {
 
 body {
   @apply bg-gradient-to-br from-brand-50 via-white to-brand-100 text-gray-900 antialiased;
+  font-family: Inter, ui-sans-serif, system-ui;
+}
+
+
+:root { color-scheme: dark; }
+
+html, body, #root { height: 100%; }
+
+body {
+  @apply bg-gradient-to-br from-gray-900 via-gray-950 to-black text-gray-100 antialiased;
   font-family: Inter, ui-sans-serif, system-ui;
 }
