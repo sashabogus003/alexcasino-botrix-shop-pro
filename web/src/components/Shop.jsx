@@ -18,9 +18,9 @@ function formatNumber(n) {
 function SkeletonCard() {
   return (
     <div className="rounded-2xl border border-gray-800 bg-gray-900 p-4 shadow-sm">
-      <div className="h-6 w-2/3 bg-gray-700 rounded mb-2 animate-pulse"></div>
-      <div className="h-4 w-1/2 bg-gray-700 rounded mb-4 animate-pulse"></div>
-      <div className="h-8 w-32 bg-gray-700 rounded animate-pulse"></div>
+      <div className="h-6 w-2/3 bg-gray-200 rounded mb-2 animate-pulse"></div>
+      <div className="h-4 w-1/2 bg-gray-200 rounded mb-4 animate-pulse"></div>
+      <div className="h-8 w-32 bg-gray-200 rounded animate-pulse"></div>
     </div>
   );
 }
@@ -33,7 +33,9 @@ export default function Shop() {
   const [loadingItems, setLoadingItems] = useState(false);
   const [error, setError] = useState(null);
   const [toasts, setToasts] = useState([]);
+
   const [selectedItem, setSelectedItem] = useState(null);
+  const [telegram, setTelegram] = useState("");
   const [copied, setCopied] = useState(false);
 
   const pushToast = (title, description) => {
@@ -96,6 +98,12 @@ export default function Shop() {
 
   const onEnter = (e) => { if (e.key === "Enter") fetchUser(); };
 
+  const getCommand = () => {
+    if (!selectedItem) return "";
+    const code = selectedItem.code || selectedItem.name || "item";
+    return `!shop buy ${code}${telegram ? " " + telegram : ""}`;
+  };
+
   return (
     <>
       {/* Toasts */}
@@ -140,7 +148,7 @@ export default function Shop() {
             </div>
             <div className="rounded-2xl border border-gray-800 bg-gray-900 p-4">
               <div className="text-sm text-gray-400">Инструкция</div>
-              <div className="text-sm">Покупайте через чат командой <code>!shop buy "Название"</code></div>
+              <div className="text-sm">Покупайте через чат командой <code>!shop buy code телега</code></div>
             </div>
           </div>
         )}
@@ -167,10 +175,11 @@ export default function Shop() {
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {items.map((item) => {
                 const title = item.name ?? item.title ?? item.label ?? "Товар";
+                const code = item.code ?? title;
                 const price = item.price ?? item.cost ?? item.points ?? 0;
                 const desc = item.description ?? item.desc ?? "";
                 return (
-                  <div key={item.id ?? title} className="group rounded-2xl border border-gray-800 bg-gray-900 p-5 shadow-sm hover:shadow-md transition">
+                  <div key={item.id ?? code} className="group rounded-2xl border bg-gray-900 p-5 shadow-sm hover:shadow-md transition">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="text-lg font-bold">{title}</div>
@@ -183,13 +192,10 @@ export default function Shop() {
                       <div className="text-lg font-extrabold text-brand-700">{formatNumber(Number(price))}</div>
                     </div>
                     <button
-                      onClick={() => setSelectedItem(title)}
+                      onClick={() => { setSelectedItem(item); setTelegram(""); }}
                       className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 text-gray-100 px-4 py-2.5 font-semibold shadow hover:brightness-110 transition"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16h8M8 12h8m-6 8h6a2 2 0 002-2V6a2 2 0 00-2-2h-6m-2 14H6a2 2 0 01-2-2V8m6-4H8a2 2 0 00-2 2v2" />
-                      </svg>
-                      Купить через чат
+                      Купить
                     </button>
                   </div>
                 );
@@ -200,30 +206,36 @@ export default function Shop() {
             </div>
           )}
         
-      {/* Modal for buy command */}
+      {/* Modal */}
       {selectedItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
           <div className="w-full max-w-lg rounded-2xl border border-gray-700 bg-gray-900 p-6 shadow-2xl">
             <div className="flex items-start justify-between">
-              <h3 className="text-xl font-bold text-gray-100">Напишите данное сообщение в чат Kick</h3>
+              <h3 className="text-xl font-bold text-gray-100">Введите ваш Telegram для связи</h3>
               <button className="text-gray-400 hover:text-gray-200" onClick={() => setSelectedItem(null)} aria-label="Закрыть">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
+            <input
+              type="text"
+              placeholder="@username"
+              value={telegram}
+              onChange={(e) => setTelegram(e.target.value)}
+              className="mt-4 w-full rounded-xl border px-4 py-2.5 bg-gray-800 text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-400"
+            />
             <div className="mt-4 rounded-xl bg-gray-800 p-4 font-mono text-green-400">
-              {!selectedItem ? null : `!shop buy "${selectedItem}"`}
+              {getCommand()}
             </div>
             <div className="mt-4 flex gap-3">
               <button
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-2 font-semibold text-gray-100 hover:brightness-110"
                 onClick={async () => {
-                  const cmd = `!shop buy "${selectedItem}"`;
-                  try {
-                    await navigator.clipboard.writeText(cmd);
-                    setCopied(true);
-                    setTimeout(() => setCopied(false), 1500);
+                  try { 
+                    await navigator.clipboard.writeText(getCommand()); 
+                    setCopied(true); 
+                    setTimeout(()=>setCopied(false),1500); 
                   } catch {}
                 }}
               >
