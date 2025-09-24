@@ -18,9 +18,10 @@ function formatNumber(n) {
 function SkeletonCard() {
   return (
     <div className="rounded-2xl border border-gray-800 bg-gray-900 p-4 shadow-sm">
-      <div className="h-6 w-2/3 bg-gray-200 rounded mb-2 animate-pulse"></div>
-      <div className="h-4 w-1/2 bg-gray-200 rounded mb-4 animate-pulse"></div>
-      <div className="h-8 w-32 bg-gray-200 rounded animate-pulse"></div>
+      <div className="h-48 w-full bg-gray-800 rounded mb-3 animate-pulse"></div>
+      <div className="h-6 w-2/3 bg-gray-700 rounded mb-2 animate-pulse"></div>
+      <div className="h-4 w-1/2 bg-gray-700 rounded mb-4 animate-pulse"></div>
+      <div className="h-8 w-32 bg-gray-700 rounded animate-pulse"></div>
     </div>
   );
 }
@@ -35,7 +36,7 @@ export default function Shop() {
   const [toasts, setToasts] = useState([]);
 
   const [selectedItem, setSelectedItem] = useState(null);
-  const [step, setStep] = useState(1); // 1 = ввод TG, 2 = готовая команда
+  const [step, setStep] = useState(1);
   const [telegram, setTelegram] = useState("");
   const [copied, setCopied] = useState(false);
 
@@ -175,48 +176,63 @@ export default function Shop() {
                 const code = item.code ?? title;
 
                 return (
-                  <div key={item.id ?? title} className="group rounded-2xl border bg-gray-900 p-5 shadow-sm hover:shadow-md transition">
-                    <div className="flex items-start justify-between gap-3">
+                  <div key={item.id ?? title} className="group rounded-2xl border bg-gray-900 p-5 shadow-sm hover:shadow-md transition flex flex-col">
+                    
+                    {/* Картинка */}
+                    {item.image ? (
+                      <img
+                        src={item.image}
+                        alt={title}
+                        className="w-full h-48 object-contain rounded-xl bg-gray-800 mb-3"
+                      />
+                    ) : (
+                      <div className="w-full h-48 flex items-center justify-center rounded-xl bg-gray-800 text-gray-500 mb-3">
+                        Нет изображения
+                      </div>
+                    )}
+
+                    {/* Текст */}
+                    <div className="flex-1 flex flex-col">
                       <div>
-                        <div className="text-lg font-bold">{title}</div>
+                        <div className="text-lg font-bold text-gray-100">{title}</div>
                         <div className="text-sm text-gray-300 mt-1 line-clamp-3">{desc}</div>
                       </div>
-                    </div>
 
-                    <div className="mt-2 text-sm font-bold">
-                      {(item.stock === -1 || item.stock === "-1") ? (
-                        <span className="text-green-500">Без лимита</span>
-                      ) : item.stock > 0 ? (
-                        <span className="text-green-400">Остаток: {item.stock}</span>
-                      ) : (
-                        <span className="text-red-500">Нет в наличии</span>
-                      )}
-                    </div>
+                      <div className="mt-2 text-sm font-bold">
+                        {(item.stock === -1 || item.stock === "-1") ? (
+                          <span className="text-green-500">Без лимита</span>
+                        ) : item.stock > 0 ? (
+                          <span className="text-green-400">Остаток: {item.stock}</span>
+                        ) : (
+                          <span className="text-red-500">Нет в наличии</span>
+                        )}
+                      </div>
 
-                    <div className="mt-4 flex items-center justify-between">
-                      <div className="text-sm text-gray-400">Цена</div>
-                      <div className="text-lg font-extrabold text-brand-700">{formatNumber(Number(price))}</div>
-                    </div>
+                      <div className="mt-4 flex items-center justify-between">
+                        <div className="text-sm text-gray-400">Цена</div>
+                        <div className="text-lg font-extrabold text-brand-700">{formatNumber(Number(price))}</div>
+                      </div>
 
-                    <button
-                      onClick={() => {
-                        if (item.stock === 0) {
-                          pushToast("❌ Товара нет в наличии", `Товар "${title}" закончился.`);
-                          return;
-                        }
-                        setSelectedItem({ title, code });
-                        setStep(1);
-                        setTelegram("");
-                      }}
-                      disabled={item.stock === 0}
-                      className={`mt-4 w-full inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-semibold shadow transition ${
-                        item.stock === 0
-                          ? "bg-gray-700 text-gray-400 cursor-not-allowed"
-                          : "bg-brand-600 text-gray-100 hover:brightness-110"
-                      }`}
-                    >
-                      Купить
-                    </button>
+                      <button
+                        onClick={() => {
+                          if (item.stock === 0) {
+                            pushToast("❌ Товара нет в наличии", `Товар "${title}" закончился.`);
+                            return;
+                          }
+                          setSelectedItem({ title, code });
+                          setStep(1);
+                          setTelegram("");
+                        }}
+                        disabled={item.stock === 0}
+                        className={`mt-4 w-full inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-semibold shadow transition ${
+                          item.stock === 0
+                            ? "bg-gray-700 text-gray-400 cursor-not-allowed"
+                            : "bg-brand-600 text-gray-100 hover:brightness-110"
+                        }`}
+                      >
+                        Купить
+                      </button>
+                    </div>
                   </div>
                 );
               })}
