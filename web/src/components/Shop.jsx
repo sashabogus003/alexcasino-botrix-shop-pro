@@ -35,7 +35,7 @@ export default function Shop() {
   const [toasts, setToasts] = useState([]);
 
   const [selectedItem, setSelectedItem] = useState(null);
-  const [step, setStep] = useState(1); // 1 = ввод Telegram, 2 = готовая команда
+  const [step, setStep] = useState(1); // 1 = ввод TG, 2 = готовая команда
   const [telegram, setTelegram] = useState("");
   const [copied, setCopied] = useState(false);
 
@@ -99,12 +99,6 @@ export default function Shop() {
 
   const onEnter = (e) => { if (e.key === "Enter") fetchUser(); };
 
-  const getCommand = () => {
-    if (!selectedItem) return "";
-    const code = selectedItem.code || selectedItem.name || "item";
-    return `!shop buy ${code}${telegram ? " " + telegram : ""}`;
-  };
-
   return (
     <>
       {/* Toasts */}
@@ -115,7 +109,6 @@ export default function Shop() {
       </div>
 
       <div className="bg-gray-900/70 backdrop-blur rounded-3xl shadow-xl p-6 border border-gray-800">
-        {/* Поиск пользователя */}
         <div className="flex flex-col sm:flex-row sm:items-end gap-3">
           <div className="flex-1">
             <label className="text-sm text-gray-300">Ник на Kick</label>
@@ -138,7 +131,6 @@ export default function Shop() {
           </button>
         </div>
 
-        {/* Баланс */}
         {user && (
           <div className="mt-5 grid sm:grid-cols-3 gap-4">
             <div className="rounded-2xl border border-gray-800 bg-gray-900 p-4">
@@ -151,12 +143,11 @@ export default function Shop() {
             </div>
             <div className="rounded-2xl border border-gray-800 bg-gray-900 p-4">
               <div className="text-sm text-gray-400">Инструкция</div>
-              <div className="text-sm">Покупайте через чат командой <code>!shop buy code телега</code></div>
+              <div className="text-sm">Покупайте через чат командой <code>!shop buy "Название"</code></div>
             </div>
           </div>
         )}
 
-        {/* Товары */}
         <div className="mt-8">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-xl font-bold">🛍️ Товары</h2>
@@ -179,25 +170,50 @@ export default function Shop() {
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {items.map((item) => {
                 const title = item.name ?? item.title ?? item.label ?? "Товар";
-                const code = item.code ?? title;
                 const price = item.price ?? item.cost ?? item.points ?? 0;
                 const desc = item.description ?? item.desc ?? "";
+                const code = item.code ?? title;
+
                 return (
-                  <div key={item.id ?? code} className="group rounded-2xl border bg-gray-900 p-5 shadow-sm hover:shadow-md transition">
+                  <div key={item.id ?? title} className="group rounded-2xl border bg-gray-900 p-5 shadow-sm hover:shadow-md transition">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="text-lg font-bold">{title}</div>
                         <div className="text-sm text-gray-300 mt-1 line-clamp-3">{desc}</div>
                       </div>
                     </div>
-                    <div className="mt-2 text-sm text-gray-400">{(item.stock === -1 || item.stock === "-1") ? "Без лимита" : `Остаток: ${item.stock ?? 0}`}</div>
+
+                    <div className="mt-2 text-sm font-bold">
+                      {(item.stock === -1 || item.stock === "-1") ? (
+                        <span className="text-green-500">Без лимита</span>
+                      ) : item.stock > 0 ? (
+                        <span className="text-green-400">Остаток: {item.stock}</span>
+                      ) : (
+                        <span className="text-red-500">Нет в наличии</span>
+                      )}
+                    </div>
+
                     <div className="mt-4 flex items-center justify-between">
                       <div className="text-sm text-gray-400">Цена</div>
                       <div className="text-lg font-extrabold text-brand-700">{formatNumber(Number(price))}</div>
                     </div>
+
                     <button
-                      onClick={() => { setSelectedItem(item); setStep(1); setTelegram(""); }}
-                      className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 text-gray-100 px-4 py-2.5 font-semibold shadow hover:brightness-110 transition"
+                      onClick={() => {
+                        if (item.stock === 0) {
+                          pushToast("❌ Товара нет в наличии", `Товар "${title}" закончился.`);
+                          return;
+                        }
+                        setSelectedItem({ title, code });
+                        setStep(1);
+                        setTelegram("");
+                      }}
+                      disabled={item.stock === 0}
+                      className={`mt-4 w-full inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-semibold shadow transition ${
+                        item.stock === 0
+                          ? "bg-gray-700 text-gray-400 cursor-not-allowed"
+                          : "bg-brand-600 text-gray-100 hover:brightness-110"
+                      }`}
                     >
                       Купить
                     </button>
@@ -210,25 +226,30 @@ export default function Shop() {
             </div>
           )}
 
-          {/* Модалки */}
+          {/* Step 1: ввод Telegram */}
           {selectedItem && step === 1 && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
               <div className="w-full max-w-lg rounded-2xl border border-gray-700 bg-gray-900 p-6 shadow-2xl">
-                <h3 className="text-xl font-bold text-gray-100">Введите ваш Telegram для связи</h3>
+                <h3 className="text-xl font-bold text-gray-100">Укажите свой Telegram для связи</h3>
                 <input
                   type="text"
                   placeholder="@username"
                   value={telegram}
                   onChange={(e) => setTelegram(e.target.value)}
-                  className="mt-4 w-full rounded-xl border px-4 py-2.5 bg-gray-800 text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-400"
+                  className="mt-4 w-full rounded-xl border border-gray-700 bg-gray-800 px-4 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-400"
                 />
                 <div className="mt-4 flex gap-3">
                   <button
                     className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-2 font-semibold text-gray-100 hover:brightness-110"
-                    onClick={() => setStep(2)}
-                    disabled={!telegram.trim()}
+                    onClick={() => {
+                      if (!telegram.trim()) {
+                        pushToast("Введите Telegram", "Чтобы продолжить, укажите свой Telegram.");
+                        return;
+                      }
+                      setStep(2);
+                    }}
                   >
-                    Продолжить
+                    Далее
                   </button>
                   <button
                     className="rounded-xl border border-gray-700 px-4 py-2 text-gray-200 hover:bg-gray-800"
@@ -241,27 +262,27 @@ export default function Shop() {
             </div>
           )}
 
+          {/* Step 2: готовая команда */}
           {selectedItem && step === 2 && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
               <div className="w-full max-w-lg rounded-2xl border border-gray-700 bg-gray-900 p-6 shadow-2xl">
                 <div className="flex items-start justify-between">
-                  <h3 className="text-xl font-bold text-gray-100">Вставьте эту команду в чат Kick</h3>
+                  <h3 className="text-xl font-bold text-gray-100">Напишите данное сообщение в чат Kick</h3>
                   <button className="text-gray-400 hover:text-gray-200" onClick={() => setSelectedItem(null)} aria-label="Закрыть">
-                    ✕
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                   </button>
                 </div>
                 <div className="mt-4 rounded-xl bg-gray-800 p-4 font-mono text-green-400">
-                  {getCommand()}
+                  {!selectedItem ? null : `!shop buy ${selectedItem.code} ${telegram}`}
                 </div>
                 <div className="mt-4 flex gap-3">
                   <button
                     className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-2 font-semibold text-gray-100 hover:brightness-110"
                     onClick={async () => {
-                      try { 
-                        await navigator.clipboard.writeText(getCommand()); 
-                        setCopied(true); 
-                        setTimeout(()=>setCopied(false),1500); 
-                      } catch {}
+                      const cmd = `!shop buy ${selectedItem.code} ${telegram}`;
+                      try { await navigator.clipboard.writeText(cmd); setCopied(true); setTimeout(()=>setCopied(false),1500); } catch {}
                     }}
                   >
                     Скопировать
@@ -277,7 +298,6 @@ export default function Shop() {
               </div>
             </div>
           )}
-
         </div>
       </div>
     </>
