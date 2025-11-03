@@ -152,7 +152,7 @@ export default function Shop() {
             </div>
             <div className="card p-4">
               <div className="text-sm text-gray-400">Инструкция</div>
-              <div className="text-sm">Покупайте через чат командой <code>!shop buy code @telegram</code></div>
+              <div className="text-sm">Выберите товар который есть в наличии, далее укажите свой ТГ логин(начинается с @) Вставьте комманду которая будет показына в чат kick</div>
             </div>
           </div>
         )}
