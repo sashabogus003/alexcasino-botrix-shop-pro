@@ -24,7 +24,7 @@ export default function App() {
       </main>
 
       <footer className="py-10 text-center text-sm text-gray-500">
-        Сделано с ❤️ для <b>alexcasino</b>. Введите в чат Kick команду: <code>!shop buy code @telegram</code>.
+        Сделано с ❤️ для <b>alexcasino</b>. Выбери товар который есть в наличии и следуй инструкции!.
       </footer>
     </div>
   );
